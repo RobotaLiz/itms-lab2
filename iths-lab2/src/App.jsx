@@ -1,35 +1,56 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import Header from './components/Header';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import Home from './pages/Home';
+import Cats from './pages/Cats';
+import About from './pages/About';
+import SignInPage from './pages/SignInPage';
+import { useState, useEffect } from 'react';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const loggedInStatus = localStorage.getItem("isLoggedIn");
+    if (loggedInStatus === "true") {
+      setIsLoggedIn(true);
+    }
+  }, []);
+
+  const handleLogin = () => {
+    setIsLoggedIn(true);
+    localStorage.setItem("isLoggedIn", "true");
+    console.log("Inloggning lyckades");
+  };
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    localStorage.removeItem("isLoggedIn");
+  };
+
+  const ProtectedRoute = ({ element }) => {
+    return isLoggedIn ? element : <Navigate to="/SignInPage" />;
+  };
 
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <Header onLogout={handleLogout} />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route 
+          path="/cats" 
+          element={<ProtectedRoute element={<Cats />} />} 
+        />
+        <Route 
+          path="/about" 
+          element={<ProtectedRoute element={<About />} />} 
+        />
+        <Route 
+          path="/SignInPage" 
+          element={<SignInPage onLogin={handleLogin} />} 
+        />
+      </Routes>
     </>
-  )
+  );
 }
 
-export default App
+export default App;
